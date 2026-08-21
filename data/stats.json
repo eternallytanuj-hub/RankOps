@@ -1,8 +1,8 @@
 {
-  "totalAudits": 57,
-  "totalFilesScanned": 128670,
-  "avgScoreImprovement": 46,
-  "aiDirectivesDeployed": 493,
+  "totalAudits": 58,
+  "totalFilesScanned": 128720,
+  "avgScoreImprovement": 48,
+  "aiDirectivesDeployed": 502,
   "recentAudits": [
     {
       "repo": "test-org/super-app",
@@ -11,7 +11,7 @@
       "scoreBefore": 40,
       "scoreAfter": 95,
       "scoreDelta": "+55 pts",
-      "timestamp": "2026-08-21T10:48:39.582Z"
+      "timestamp": "2026-08-21T10:56:41.379Z"
     },
     {
       "repo": "lavaajios-creator/new",

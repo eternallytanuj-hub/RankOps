@@ -78,7 +78,7 @@ async function runTests() {
     const brokenHtml = `<!DOCTYPE html><html><head><title>App</title><script type="application/ld+json">{ broken json : missing quotes }</script></head><body></body></html>`;
     const safety = validatePatchSafety('index.html', brokenHtml);
     assert.strictEqual(safety.passed, false);
-    assert.ok(safety.errors.some(e => e.includes('Invalid JSON-LD syntax')));
+    assert.ok(safety.errors.some(e => e.includes('Malformed JSON-LD syntax')));
   });
 
   it('Validates robots.txt, llms.txt, and sitemap.xml specifications', () => {
@@ -87,6 +87,8 @@ async function runTests() {
 
     assert.strictEqual(validatePatchSafety('llms.txt', '# Project Title\n> Summary').passed, true);
     assert.strictEqual(validatePatchSafety('llms.txt', 'plain text without h1 header').passed, false);
+
+    assert.strictEqual(validatePatchSafety('llms-full.txt', '# Extended Spec\n> Deep context').passed, true);
 
     assert.strictEqual(validatePatchSafety('sitemap.xml', '<?xml version="1.0"?><urlset><url><loc>https://app.dev/</loc></url></urlset>').passed, true);
     assert.strictEqual(validatePatchSafety('sitemap.xml', '<badxml></badxml>').passed, false);
@@ -129,19 +131,20 @@ async function runTests() {
     ]
   };
 
-  await itAsync('Synthesizes 4-file patch suite with Git diffs and projected score delta', async () => {
+  await itAsync('Synthesizes 5-file enterprise patch suite with Git diffs and projected score delta', async () => {
     const result = await surgeon.generatePatches(sampleRepo, sampleArtifacts, sampleAnalysis);
 
-    assert.strictEqual(result.filesPatchedCount, 4);
+    assert.strictEqual(result.filesPatchedCount, 5);
     assert.strictEqual(result.baselineScore, 54);
-    assert.strictEqual(result.projectedScore, 92);
-    assert.strictEqual(result.scoreDelta, '+38 pts');
+    assert.strictEqual(result.projectedScore, 96);
+    assert.strictEqual(result.scoreDelta, '+42 pts');
     assert.strictEqual(result.guardrailStatus, 'PASSED');
 
     const patchedFiles = result.patches.map(p => p.filePath);
     assert.ok(patchedFiles.includes('index.html'));
     assert.ok(patchedFiles.includes('robots.txt'));
     assert.ok(patchedFiles.includes('llms.txt'));
+    assert.ok(patchedFiles.includes('llms-full.txt'));
     assert.ok(patchedFiles.includes('sitemap.xml'));
 
     // Check index.html patch
@@ -156,6 +159,7 @@ async function runTests() {
     assert.ok(robotsPatch.patchedContent.includes('User-agent: GPTBot'));
     assert.ok(robotsPatch.patchedContent.includes('User-agent: ClaudeBot'));
     assert.ok(robotsPatch.patchedContent.includes('User-agent: PerplexityBot'));
+    assert.ok(robotsPatch.patchedContent.includes('User-agent: OAI-SearchBot'));
 
     // Check llms.txt patch
     const llmsPatch = result.patches.find(p => p.filePath === 'llms.txt');
@@ -163,10 +167,16 @@ async function runTests() {
     assert.ok(llmsPatch.diff.includes('new file mode 100644'));
     assert.ok(llmsPatch.patchedContent.includes('# RankOps'));
 
+    // Check llms-full.txt patch
+    const llmsFullPatch = result.patches.find(p => p.filePath === 'llms-full.txt');
+    assert.strictEqual(llmsFullPatch.isNewFile, true);
+    assert.ok(llmsFullPatch.patchedContent.includes('# RankOps — Complete Extended LLM Specification'));
+
     // Verify concatenated full diff
     assert.ok(result.fullUnifiedDiff.includes('diff --git a/index.html b/index.html'));
     assert.ok(result.fullUnifiedDiff.includes('diff --git a/robots.txt b/robots.txt'));
     assert.ok(result.fullUnifiedDiff.includes('diff --git a/llms.txt b/llms.txt'));
+    assert.ok(result.fullUnifiedDiff.includes('diff --git a/llms-full.txt b/llms-full.txt'));
     assert.ok(result.fullUnifiedDiff.includes('diff --git a/sitemap.xml b/sitemap.xml'));
 
     console.log(`     [AI Surgeon]: Patched ${result.filesPatchedSummary}`);

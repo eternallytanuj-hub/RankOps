@@ -1,9 +1,18 @@
 {
-  "totalAudits": 50,
-  "totalFilesScanned": 128550,
-  "avgScoreImprovement": 44,
-  "aiDirectivesDeployed": 430,
+  "totalAudits": 52,
+  "totalFilesScanned": 128604,
+  "avgScoreImprovement": 45,
+  "aiDirectivesDeployed": 448,
   "recentAudits": [
+    {
+      "repo": "eternallytanuj-hub/RankOps",
+      "defaultBranch": "main",
+      "filesScanned": 4,
+      "scoreBefore": 50,
+      "scoreAfter": 92,
+      "scoreDelta": "+42 pts",
+      "timestamp": "2026-08-21T10:30:18.264Z"
+    },
     {
       "repo": "test-org/super-app",
       "defaultBranch": "main",
@@ -11,7 +20,7 @@
       "scoreBefore": 40,
       "scoreAfter": 95,
       "scoreDelta": "+55 pts",
-      "timestamp": "2026-08-21T10:14:06.047Z"
+      "timestamp": "2026-08-21T10:29:30.627Z"
     },
     {
       "repo": "facebook/react",
@@ -39,15 +48,6 @@
       "scoreAfter": 94,
       "scoreDelta": "+52 pts",
       "timestamp": "2026-08-21T08:42:21.032Z"
-    },
-    {
-      "repo": "eternallytanuj-hub/RankOps",
-      "defaultBranch": "main",
-      "filesScanned": 842,
-      "scoreBefore": 54,
-      "scoreAfter": 94,
-      "scoreDelta": "+40 pts",
-      "timestamp": "2026-08-21T07:42:21.032Z"
     }
   ]
 }

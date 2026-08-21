@@ -339,18 +339,25 @@ class ModalsManager {
         submitBtn.onclick = async (e) => {
           e.preventDefault();
           submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span class="audit-btn-spinner"></span><span class="audit-btn-text">Creating Remote Branch & PR on GitHub...</span>';
+          submitBtn.innerHTML = '<span class="audit-btn-spinner"></span><span class="audit-btn-text">Opening Pull Request on GitHub...</span>';
+
+          const customTokenInput = document.querySelector('.github-token-input');
+          const customToken = customTokenInput ? customTokenInput.value.trim() : null;
 
           try {
             const prResp = await fetch('/api/audit/create-pr', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                ...(customToken ? { 'Authorization': `Bearer ${customToken}` } : {})
+              },
               body: JSON.stringify({
                 owner: parsedData.owner,
                 repo: parsedData.repo,
                 baseBranch: parsedData.defaultBranch,
                 patches: patchData?.patches || [],
-                analysis: analysisData || {}
+                analysis: analysisData || {},
+                customToken: customToken || null
               })
             });
 
@@ -361,7 +368,8 @@ class ModalsManager {
               submitBtn.disabled = false;
               submitBtn.style.background = '#28a745';
               submitBtn.style.boxShadow = '0 0 30px rgba(40, 167, 69, 0.6)';
-              submitBtn.innerHTML = `<a href="${prJson.data.prUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;"><span class="audit-btn-icon">✓</span><span>View Pull Request #${prJson.data.prNumber} on GitHub ↗</span></a>`;
+              const forkBadge = prJson.data?.isCrossRepoFork ? ' (via Fork)' : '';
+              submitBtn.innerHTML = `<a href="${prJson.data.prUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;"><span class="audit-btn-icon">✓</span><span>View Pull Request #${prJson.data.prNumber}${forkBadge} on GitHub ↗</span></a>`;
 
               window.dispatchEvent(new CustomEvent('rankops:audit-complete', {
                 detail: {

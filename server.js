@@ -434,8 +434,8 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const authHeader = req.headers['authorization'];
-      const userToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+      const authHeader = req.headers['authorization'] || req.headers['x-github-token'];
+      const userToken = parsedBody.customToken || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader) || null;
       const creator = new GitHubPRCreator({ token: userToken });
 
       const result = await creator.createPullRequest({
@@ -443,7 +443,8 @@ const server = http.createServer(async (req, res) => {
         repo,
         baseBranch: baseBranch || 'main',
         patches,
-        analysis: analysis || {}
+        analysis: analysis || {},
+        customToken: userToken
       });
 
       // Record in live stats

@@ -9,7 +9,7 @@ const { statsAggregator } = require('../../../lib/stats-aggregator');
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-GitHub-Token');
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     });
   }
 
-  const { owner, repo, baseBranch, patches, analysis } = req.body || {};
+  const { owner, repo, baseBranch, patches, analysis, customToken } = req.body || {};
 
   if (!owner || !repo || !Array.isArray(patches)) {
     res.setHeader('Content-Type', 'application/problem+json');
@@ -38,8 +38,8 @@ export default async function handler(req, res) {
     });
   }
 
-  const authHeader = req.headers['authorization'];
-  const userToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  const authHeader = req.headers['authorization'] || req.headers['x-github-token'];
+  const userToken = customToken || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader) || null;
 
   const creator = new GitHubPRCreator({ token: userToken });
 

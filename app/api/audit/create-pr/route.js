@@ -13,7 +13,7 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-GitHub-Token'
     }
   });
 }
@@ -31,7 +31,7 @@ export async function POST(request) {
     }, { status: 400 });
   }
 
-  const { owner, repo, baseBranch, patches, analysis } = body || {};
+  const { owner, repo, baseBranch, patches, analysis, customToken } = body || {};
 
   if (!owner || !repo || !Array.isArray(patches)) {
     return NextResponse.json({
@@ -42,8 +42,8 @@ export async function POST(request) {
     }, { status: 400 });
   }
 
-  const authHeader = request.headers.get('authorization');
-  const userToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  const authHeader = request.headers.get('authorization') || request.headers.get('x-github-token');
+  const userToken = customToken || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader) || null;
 
   const creator = new GitHubPRCreator({ token: userToken });
 

@@ -1,0 +1,28 @@
+{
+  "name": "rankops",
+  "version": "1.2.0",
+  "description": "Automated Web Application SEO & AI Engine Optimization (AEO) Auditor & Patch Generator",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node tests/test-repo-parser.js && node tests/test-map-filter-fetch.js && node tests/test-ai-analyzer.js && node tests/test-ai-surgeon.js && node tests/test-ui-modal.js && node tests/test-stats-aggregator.js && node tests/test-pr-creator.js && node tests/test-groq-fallback-key.js && node tests/test-report-generator.js && node tests/test-vercel-serverless.js"
+  },
+  "keywords": [
+    "seo",
+    "aeo",
+    "llmo",
+    "ai-crawler",
+    "llms-txt",
+    "opengraph",
+    "schema-org",
+    "groq",
+    "github-pr"
+  ],
+  "author": "Hack Titans (Galgotias University)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

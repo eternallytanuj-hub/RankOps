@@ -1,0 +1,81 @@
+/**
+ * Vercel Serverless Function
+ * POST /api/audit/map-filter-fetch
+ */
+
+const { MapFilterFetchPipeline, MapFilterFetchError } = require('../../lib/map-filter-fetch');
+const { GitHubClient, GitHubApiError } = require('../../lib/github-client');
+
+module.exports = async function handler(req, res) {
+  // CORS Preflight
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
+  // Enforce HTTP Method
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    res.setHeader('Content-Type', 'application/problem+json');
+    return res.status(405).json({
+      type: 'https://rankops.dev/errors/method-not-allowed',
+      title: 'Method Not Allowed',
+      status: 405,
+      detail: `HTTP method ${req.method} is not supported. Use POST.`
+    });
+  }
+
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch (e) { body = {}; }
+  }
+  const { owner, repo, treeSha, enabledCategories } = body || {};
+
+  if (!owner || !repo || !treeSha) {
+    res.setHeader('Content-Type', 'application/problem+json');
+    return res.status(400).json({
+      type: 'https://rankops.dev/errors/invalid-request-body',
+      title: 'Bad Request',
+      status: 400,
+      detail: 'Missing required parameters (owner, repo, treeSha) in JSON request body.'
+    });
+  }
+
+  const authHeader = req.headers['authorization'];
+  const userToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  const client = new GitHubClient({ token: userToken });
+  const pipeline = new MapFilterFetchPipeline({ client });
+
+  try {
+    const result = await pipeline.execute(owner, repo, treeSha, { enabledCategories });
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json({
+      success: true,
+      data: result
+    });
+  } catch (err) {
+    res.setHeader('Content-Type', 'application/problem+json');
+
+    if (err instanceof MapFilterFetchError || err instanceof GitHubApiError) {
+      return res.status(err.statusCode || 500).json({
+        type: `https://rankops.dev/errors/${(err.code || 'error').toLowerCase().replace(/_/g, '-')}`,
+        title: err.title || 'Pipeline Error',
+        status: err.statusCode || 500,
+        code: err.code,
+        detail: err.message,
+        details: err.details
+      });
+    }
+
+    console.error('[Vercel Serverless Error - map-filter-fetch]:', err);
+    return res.status(500).json({
+      type: 'https://rankops.dev/errors/internal-server-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: 'An unexpected error occurred during map-filter-fetch execution.'
+    });
+  }
+};

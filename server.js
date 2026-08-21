@@ -6,6 +6,7 @@ const { GitHubParserError } = require('./lib/github-parser');
 const { MapFilterFetchPipeline, MapFilterFetchError } = require('./lib/map-filter-fetch');
 const { AIAnalyzer, AIAnalysisError } = require('./lib/ai-analyzer');
 const { GroqClient, GroqApiError } = require('./lib/groq-client');
+const { AISurgeon, AISurgeonError } = require('./lib/ai-surgeon');
 
 // Load environment variables from .env if present
 try {
@@ -62,15 +63,15 @@ const server = http.createServer(async (req, res) => {
 
       req.on('data', chunk => {
         body += chunk.toString();
-        // Body size guard (200KB limit for analyzed code artifacts)
-        if (body.length > 200 * 1024 && !exceeded) {
+        // Body size guard (250KB limit)
+        if (body.length > 250 * 1024 && !exceeded) {
           exceeded = true;
           res.writeHead(413, { 'Content-Type': 'application/problem+json' });
           res.end(JSON.stringify({
             type: 'https://rankops.dev/errors/payload-too-large',
             title: 'Payload Too Large',
             status: 413,
-            detail: 'Request body exceeds maximum size of 200KB.'
+            detail: 'Request body exceeds maximum size of 250KB.'
           }));
           req.destroy();
         }
@@ -319,6 +320,79 @@ const server = http.createServer(async (req, res) => {
         title: 'Internal Server Error',
         status: 500,
         detail: 'An unexpected error occurred during AI analysis orchestration.'
+      }));
+    }
+    return;
+  }
+
+  // API Route: POST /api/audit/generate-patches (Phase 4)
+  if (urlPath === '/api/audit/generate-patches') {
+    if (req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/method-not-allowed',
+        title: 'Method Not Allowed',
+        status: 405,
+        detail: `HTTP method ${req.method} is not supported. Use POST.`
+      }));
+      return;
+    }
+
+    try {
+      const parsedBody = await readJsonBody();
+      const { repoInfo, artifacts, analysis } = parsedBody;
+
+      if (!repoInfo || !Array.isArray(artifacts)) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-request-body',
+          title: 'Bad Request',
+          status: 400,
+          detail: 'Missing required parameters (repoInfo, artifacts) in JSON request body.'
+        }));
+        return;
+      }
+
+      const surgeon = new AISurgeon();
+      const result = await surgeon.generatePatches(repoInfo, artifacts, analysis || {});
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        data: result
+      }));
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-json',
+          title: 'Bad Request',
+          status: 400,
+          detail: err.message
+        }));
+        return;
+      }
+
+      if (err instanceof AISurgeonError) {
+        res.writeHead(err.statusCode || 500, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: `https://rankops.dev/errors/${(err.code || 'error').toLowerCase().replace(/_/g, '-')}`,
+          title: err.title || 'AI Surgeon Error',
+          status: err.statusCode || 500,
+          code: err.code,
+          detail: err.message,
+          details: err.details
+        }));
+        return;
+      }
+
+      console.error('[Server Error - generate-patches]:', err);
+      res.writeHead(500, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/internal-server-error',
+        title: 'Internal Server Error',
+        status: 500,
+        detail: 'An unexpected error occurred during AI Surgeon patch generation.'
       }));
     }
     return;

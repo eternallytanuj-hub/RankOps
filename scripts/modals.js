@@ -197,6 +197,24 @@ class ModalsManager {
           analysisData = analyzeJson.data;
         }
       } catch (ae) {}
+
+      // Phase 4: Call Real Backend Endpoint POST /api/audit/generate-patches
+      let patchData = null;
+      try {
+        const patchResp = await fetch('/api/audit/generate-patches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repoInfo: parsedData,
+            artifacts: pipelineData?.artifacts || [],
+            analysis: analysisData || {}
+          })
+        });
+        const patchJson = await patchResp.json();
+        if (patchResp.ok && patchJson.success) {
+          patchData = patchJson.data;
+        }
+      } catch (pe) {}
     } catch (err) {
       // Fallback local simulation if running offline/static
       parsedData = {

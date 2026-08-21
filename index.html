@@ -552,6 +552,20 @@
         <label style="font-size: 0.75rem; color: #a8aebc; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.35rem;">GitHub Repository URL</label>
         <input type="text" class="connect-input" value="https://github.com/developer/ai-commerce-app" required>
 
+        <!-- Cybernetic Multi-Stage Progress Loader -->
+        <div class="audit-progress-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div class="audit-progress-header">
+            <span class="audit-progress-step">
+              <span class="audit-progress-step-icon"></span>
+              <span class="audit-progress-step-text">INITIALIZING AUDIT PIPELINE...</span>
+            </span>
+            <span class="audit-progress-pct">0%</span>
+          </div>
+          <div class="audit-progress-track">
+            <div class="audit-progress-bar"></div>
+          </div>
+        </div>
+
         <!-- Live Terminal Logs Output -->
         <div class="audit-terminal-logs"></div>
 
@@ -575,8 +589,9 @@
           <span>Files Patched: <strong>4 Files (index.html, robots.txt, sitemap.xml, llms.txt)</strong></span>
         </div>
 
-        <button type="submit" class="submit-btn connect-btn" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; margin-top: 0.5rem;">
-          Run Live Audit
+        <button type="submit" class="audit-submit-btn">
+          <span class="audit-btn-icon">◆</span>
+          <span class="audit-btn-text">Run Live Audit</span>
         </button>
       </form>
     </div>

@@ -1,9 +1,27 @@
 {
-  "totalAudits": 54,
-  "totalFilesScanned": 128612,
-  "avgScoreImprovement": 44,
-  "aiDirectivesDeployed": 466,
+  "totalAudits": 57,
+  "totalFilesScanned": 128670,
+  "avgScoreImprovement": 46,
+  "aiDirectivesDeployed": 493,
   "recentAudits": [
+    {
+      "repo": "test-org/super-app",
+      "defaultBranch": "main",
+      "filesScanned": 50,
+      "scoreBefore": 40,
+      "scoreAfter": 95,
+      "scoreDelta": "+55 pts",
+      "timestamp": "2026-08-21T10:48:39.582Z"
+    },
+    {
+      "repo": "lavaajios-creator/new",
+      "defaultBranch": "main",
+      "filesScanned": 4,
+      "scoreBefore": 50,
+      "scoreAfter": 92,
+      "scoreDelta": "+42 pts",
+      "timestamp": "2026-08-21T10:45:57.716Z"
+    },
     {
       "repo": "react/react",
       "defaultBranch": "main",
@@ -21,15 +39,6 @@
       "scoreAfter": 92,
       "scoreDelta": "+42 pts",
       "timestamp": "2026-08-21T10:31:36.629Z"
-    },
-    {
-      "repo": "test-org/super-app",
-      "defaultBranch": "main",
-      "filesScanned": 50,
-      "scoreBefore": 40,
-      "scoreAfter": 95,
-      "scoreDelta": "+55 pts",
-      "timestamp": "2026-08-21T10:29:30.627Z"
     },
     {
       "repo": "facebook/react",

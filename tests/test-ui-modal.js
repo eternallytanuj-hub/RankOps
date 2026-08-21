@@ -40,23 +40,37 @@ function runUITests() {
     assert.ok(html.includes('class="audit-progress-bar"'));
   });
 
+  it('index.html contains minimal clean diff viewer and results summary card', () => {
+    assert.ok(html.includes('class="audit-diff-container"'));
+    assert.ok(html.includes('class="diff-header-bar"'));
+    assert.ok(html.includes('class="diff-window-dots"'));
+    assert.ok(html.includes('class="diff-stat-badge diff-stat-added"'));
+    assert.ok(html.includes('class="audit-results-summary"'));
+    assert.ok(html.includes('class="summary-metric"'));
+  });
+
   it('index.html uses disambiguated .audit-submit-btn to avoid click hijacking', () => {
     assert.ok(html.includes('<button type="submit" class="audit-submit-btn">'));
     assert.ok(!html.includes('<button type="submit" class="submit-btn connect-btn"'));
   });
 
-  it('styles/main.css defines cybernetic progress loader animations and glowing gradients', () => {
+  it('styles/main.css defines minimal, clean progress loader and diff styling', () => {
     assert.ok(css.includes('.audit-progress-container'));
     assert.ok(css.includes('.audit-progress-bar'));
+    assert.ok(css.includes('.diff-header-bar'));
+    assert.ok(css.includes('.diff-line.is-added'));
+    assert.ok(css.includes('.diff-line.is-deleted'));
+    assert.ok(css.includes('.diff-line-gutter'));
     assert.ok(css.includes('.audit-submit-btn'));
     assert.ok(css.includes('.audit-btn-spinner'));
-    assert.ok(css.includes('@keyframes spin'));
-    assert.ok(css.includes('@keyframes pulse-glow'));
   });
 
-  it('scripts/modals.js excludes modal-internal buttons from generic modal openers', () => {
+  it('scripts/modals.js excludes modal-internal buttons and renders clean diff lines', () => {
     assert.ok(js.includes("if (btn.closest('.connect-modal')) return;"));
     assert.ok(js.includes('updateProgress('));
+    assert.ok(js.includes('is-added'));
+    assert.ok(js.includes('is-deleted'));
+    assert.ok(js.includes('diff-line-gutter'));
   });
 
   console.log(`\n===================================`);

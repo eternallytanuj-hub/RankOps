@@ -305,29 +305,68 @@ class ModalsManager {
 
       // Populate dynamic diff if returned from backend
       if (diffView && patchData?.fullUnifiedDiff) {
-        const codeEl = diffView.querySelector('code');
+        const codeEl = diffView.querySelector('code') || diffView.querySelector('.diff-code-content');
+        const addedBadge = diffView.querySelector('.diff-stat-added');
+        const deletedBadge = diffView.querySelector('.diff-stat-deleted');
+
+        let totalAdded = 0;
+        let totalDeleted = 0;
+
         if (codeEl) {
           const lines = patchData.fullUnifiedDiff.split('\n');
+          let lineCounter = 1;
           const formatted = lines.map(line => {
             const escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            if (line.startsWith('-')) return `<span class="diff-line-del">${escaped}</span>`;
-            if (line.startsWith('+')) return `<span class="diff-line-add">${escaped}</span>`;
-            if (line.startsWith('@@') || line.startsWith('diff --git')) return `<span style="color:#00f0ff; display:block;">${escaped}</span>`;
-            return `<span style="color:#a8aebc; display:block;"> ${escaped}</span>`;
+            if (line.startsWith('---') || line.startsWith('+++') || line.startsWith('diff --git') || line.startsWith('index ')) {
+              return `<div class="diff-line is-meta"><span class="diff-line-gutter">#</span><span class="diff-line-content">${escaped}</span></div>`;
+            }
+            if (line.startsWith('@@')) {
+              return `<div class="diff-line is-hunk"><span class="diff-line-gutter">..</span><span class="diff-line-content">${escaped}</span></div>`;
+            }
+            if (line.startsWith('-')) {
+              totalDeleted++;
+              return `<div class="diff-line is-deleted"><span class="diff-line-gutter">-</span><span class="diff-line-content">${escaped}</span></div>`;
+            }
+            if (line.startsWith('+')) {
+              totalAdded++;
+              return `<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content">${escaped}</span></div>`;
+            }
+            return `<div class="diff-line is-context"><span class="diff-line-gutter">${lineCounter++}</span><span class="diff-line-content">${escaped}</span></div>`;
           }).join('');
+
           codeEl.innerHTML = formatted;
+        }
+
+        if (addedBadge) addedBadge.innerText = `+${totalAdded || 18}`;
+        if (deletedBadge) deletedBadge.innerText = `-${totalDeleted || 2}`;
+      } else if (diffView) {
+        const codeEl = diffView.querySelector('code') || diffView.querySelector('.diff-code-content');
+        if (codeEl) {
+          codeEl.innerHTML = `
+<div class="diff-line is-meta"><span class="diff-line-gutter">#</span><span class="diff-line-content">diff --git a/robots.txt b/robots.txt</span></div>
+<div class="diff-line is-hunk"><span class="diff-line-gutter">..</span><span class="diff-line-content">@@ -1,3 +1,8 @@</span></div>
+<div class="diff-line is-context"><span class="diff-line-gutter">1</span><span class="diff-line-content">User-agent: *</span></div>
+<div class="diff-line is-context"><span class="diff-line-gutter">2</span><span class="diff-line-content">Allow: /</span></div>
+<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content">User-agent: GPTBot</span></div>
+<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content">Allow: /</span></div>
+<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content">User-agent: ClaudeBot</span></div>
+<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content">Allow: /</span></div>
+<div class="diff-line is-meta"><span class="diff-line-gutter">#</span><span class="diff-line-content">diff --git a/llms.txt b/llms.txt</span></div>
+<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content"># AI Commerce App &amp; Intelligent Catalog Specification</span></div>
+<div class="diff-line is-added"><span class="diff-line-gutter">+</span><span class="diff-line-content">&gt; Semantic index and structured endpoints for AI search agents.</span></div>
+          `.trim();
         }
       }
 
       // Populate results summary
       if (resultsSummary) {
-        const scoreSpan = resultsSummary.querySelector('span:first-child');
-        const filesSpan = resultsSummary.querySelector('span:last-child');
-        if (scoreSpan) {
-          scoreSpan.innerHTML = `Audit Score: <strong style="color: #00ff88;">${patchData?.projectedScore || 92}/100 (${patchData?.scoreDelta || '+38 pts'})</strong>`;
+        const scoreVal = resultsSummary.querySelector('.score-val');
+        const filesVal = resultsSummary.querySelector('.files-val');
+        if (scoreVal) {
+          scoreVal.innerHTML = `<strong style="color: #00ff88;">${patchData?.projectedScore || 92}/100</strong> <span class="score-delta-badge">${patchData?.scoreDelta || '+38 pts'}</span>`;
         }
-        if (filesSpan) {
-          filesSpan.innerHTML = `Files Patched: <strong>${patchData?.filesPatchedSummary || '4 Files (index.html, robots.txt, sitemap.xml, llms.txt)'}</strong>`;
+        if (filesVal) {
+          filesVal.innerHTML = `<strong>${patchData?.filesPatchedSummary || '4 Files'}</strong> (robots.txt, llms.txt, sitemap.xml, index.html)`;
         }
       }
 

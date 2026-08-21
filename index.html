@@ -604,22 +604,36 @@
 
         <!-- Guardrail Live Diff View -->
         <div class="audit-diff-container">
-          <div class="diff-header">Guardrail Agent — index.html & llms.txt Proposed Code Patches</div>
-          <code style="display: block; font-family: var(--font-mono); font-size: 11px; line-height: 1.5;">
-            <span class="diff-line-del">- &lt;title&gt;My Next Web App&lt;/title&gt;</span>
-            <span class="diff-line-add">+ &lt;title&gt;AI Commerce App | Intelligent Catalog &amp; Search&lt;/title&gt;</span>
-            <span class="diff-line-add">+ &lt;meta name="description" content="AI-native e-commerce engine optimized for ChatGPT, Claude &amp; Perplexity."&gt;</span>
-            <span class="diff-line-add">+ &lt;link rel="canonical" href="https://ai-commerce.dev/"&gt;</span>
-            <span class="diff-line-add">+ &lt;link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM Context"&gt;</span>
-            <span class="diff-line-add">+ &lt;!-- JSON-LD Schema --&gt;</span>
-            <span class="diff-line-add">+ &lt;script type="application/ld+json"&gt;{"@context":"https://schema.org","@type":"SoftwareApplication"}&lt;/script&gt;</span>
-          </code>
+          <div class="diff-header-bar">
+            <div class="diff-header-title">
+              <span class="diff-window-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </span>
+              <span class="diff-header-label">PROPOSED REMEDIATION DIFF</span>
+            </div>
+            <div class="diff-header-stats">
+              <span class="diff-stat-badge diff-stat-added">+24</span>
+              <span class="diff-stat-badge diff-stat-deleted">-4</span>
+            </div>
+          </div>
+          <div class="diff-body-wrapper">
+            <code class="diff-code-content"></code>
+          </div>
         </div>
 
         <!-- Results Summary Badge -->
         <div class="audit-results-summary">
-          <span>Audit Score: <strong style="color: #00ff88;">92/100 (+38 pts)</strong></span>
-          <span>Files Patched: <strong>4 Files (index.html, robots.txt, sitemap.xml, llms.txt)</strong></span>
+          <div class="summary-metric">
+            <span class="summary-label">Projected Score</span>
+            <span class="summary-value score-val"><strong style="color: #00ff88;">92/100</strong> <span class="score-delta-badge">(+38 pts)</span></span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-metric">
+            <span class="summary-label">Automated Remediations</span>
+            <span class="summary-value files-val"><strong>4 Files</strong> (robots.txt, llms.txt, sitemap.xml, index.html)</span>
+          </div>
         </div>
 
         <button type="submit" class="audit-submit-btn">

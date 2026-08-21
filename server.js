@@ -4,6 +4,22 @@ const path = require('path');
 const { GitHubClient, GitHubApiError } = require('./lib/github-client');
 const { GitHubParserError } = require('./lib/github-parser');
 const { MapFilterFetchPipeline, MapFilterFetchError } = require('./lib/map-filter-fetch');
+const { AIAnalyzer, AIAnalysisError } = require('./lib/ai-analyzer');
+const { GroqClient, GroqApiError } = require('./lib/groq-client');
+
+// Load environment variables from .env if present
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^\s*([\w_]+)\s*=\s*(.*)?\s*$/);
+      if (match && !process.env[match[1]]) {
+        process.env[match[1]] = match[2].trim();
+      }
+    });
+  }
+} catch (e) {}
 
 const PORT = 3333;
 
@@ -23,7 +39,7 @@ const server = http.createServer(async (req, res) => {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Groq-Api-Key');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -46,15 +62,15 @@ const server = http.createServer(async (req, res) => {
 
       req.on('data', chunk => {
         body += chunk.toString();
-        // Body size guard (100KB limit)
-        if (body.length > 100 * 1024 && !exceeded) {
+        // Body size guard (200KB limit for analyzed code artifacts)
+        if (body.length > 200 * 1024 && !exceeded) {
           exceeded = true;
           res.writeHead(413, { 'Content-Type': 'application/problem+json' });
           res.end(JSON.stringify({
             type: 'https://rankops.dev/errors/payload-too-large',
             title: 'Payload Too Large',
             status: 413,
-            detail: 'Request body exceeds maximum size of 100KB.'
+            detail: 'Request body exceeds maximum size of 200KB.'
           }));
           req.destroy();
         }
@@ -229,6 +245,80 @@ const server = http.createServer(async (req, res) => {
         title: 'Internal Server Error',
         status: 500,
         detail: 'An unexpected error occurred during the Map-Filter-Fetch pipeline.'
+      }));
+    }
+    return;
+  }
+
+  // API Route: POST /api/audit/analyze (Phase 3)
+  if (urlPath === '/api/audit/analyze') {
+    if (req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/method-not-allowed',
+        title: 'Method Not Allowed',
+        status: 405,
+        detail: `HTTP method ${req.method} is not supported. Use POST.`
+      }));
+      return;
+    }
+
+    try {
+      const parsedBody = await readJsonBody();
+      const { repoInfo, artifacts } = parsedBody;
+
+      if (!repoInfo || !Array.isArray(artifacts)) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-request-body',
+          title: 'Bad Request',
+          status: 400,
+          detail: 'Missing required parameters (repoInfo, artifacts) in JSON request body.'
+        }));
+        return;
+      }
+
+      const customKey = req.headers['x-groq-api-key'] || null;
+      const analyzer = new AIAnalyzer({ apiKey: customKey });
+
+      const result = await analyzer.analyze(repoInfo, artifacts);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        data: result
+      }));
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-json',
+          title: 'Bad Request',
+          status: 400,
+          detail: err.message
+        }));
+        return;
+      }
+
+      if (err instanceof GroqApiError || err instanceof AIAnalysisError) {
+        res.writeHead(err.statusCode || 500, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: `https://rankops.dev/errors/${(err.code || 'error').toLowerCase().replace(/_/g, '-')}`,
+          title: err.title || 'Analysis Error',
+          status: err.statusCode || 500,
+          code: err.code,
+          detail: err.message,
+          details: err.details
+        }));
+        return;
+      }
+
+      console.error('[Server Error - analyze]:', err);
+      res.writeHead(500, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/internal-server-error',
+        title: 'Internal Server Error',
+        status: 500,
+        detail: 'An unexpected error occurred during AI analysis orchestration.'
       }));
     }
     return;

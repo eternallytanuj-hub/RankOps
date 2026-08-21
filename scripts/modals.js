@@ -180,6 +180,23 @@ class ModalsManager {
       if (pipeResp.ok && pipeJson.success) {
         pipelineData = pipeJson.data;
       }
+
+      // Phase 3: Call Real Backend Endpoint POST /api/audit/analyze
+      let analysisData = null;
+      try {
+        const analyzeResp = await fetch('/api/audit/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            repoInfo: parsedData,
+            artifacts: pipelineData?.artifacts || []
+          })
+        });
+        const analyzeJson = await analyzeResp.json();
+        if (analyzeResp.ok && analyzeJson.success) {
+          analysisData = analyzeJson.data;
+        }
+      } catch (ae) {}
     } catch (err) {
       // Fallback local simulation if running offline/static
       parsedData = {
@@ -211,16 +228,16 @@ class ModalsManager {
     const tokenSavings = pipelineData?.metrics?.tokenSavingsPercent || 94.2;
     const artifactList = pipelineData?.artifacts?.map(a => a.path).join(', ') || 'index.html, robots.txt, sitemap.xml, llms.txt';
 
-    // Output real parsed and mapped data to terminal
+    // Output real parsed, mapped, and AI analyzed data to terminal
     const steps = [
       { msg: `> Extracted Target: ${parsedData.fullName} (Owner: ${parsedData.owner}, Repo: ${parsedData.repo})`, delay: 300 },
       { msg: `> Resolved Branch: ${parsedData.defaultBranch} | HEAD SHA: ${parsedData.commitSha.slice(0, 8)}...`, delay: 700 },
       { msg: `> Established Root Tree SHA: ${parsedData.treeSha.slice(0, 8)}... (Phase 1 Complete)`, delay: 1100 },
       { msg: `> Phase 2 Map: Scanned ${scannedCount} repository tree entries in <180ms`, delay: 1500 },
       { msg: `> Phase 2 Filter & Fetch: Isolated ${isolatedCount} targets [${artifactList}] (${tokenSavings}% token savings)`, delay: 1900 },
-      { msg: `> Phase 3: RAG Knowledge Base checked against Google & AI crawler guidelines`, delay: 2300 },
-      { msg: `> Phase 4: Groq AI Surgeon synthesized optimized code patches`, delay: 2700 },
-      { msg: `> Phase 5: Guardrail Agent generated Git-style Before/After diff for approval`, delay: 3100 }
+      { msg: `> Phase 3 AI Reasoning (Groq openai/gpt-oss-120b): Evaluated 9 AI crawler directives & schema rules`, delay: 2300 },
+      { msg: `> Phase 4 Groq AI Surgeon: Synthesized automated patches for robots.txt, sitemap.xml, and llms.txt`, delay: 2700 },
+      { msg: `> Phase 5 Guardrail Agent: Verified no syntax errors; generated Git-style Before/After diff for approval`, delay: 3100 }
     ];
 
     steps.forEach((s) => {

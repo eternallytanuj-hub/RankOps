@@ -139,6 +139,11 @@ class ModalsManager {
     const terminal = document.querySelector('.audit-terminal-logs');
     const diffView = document.querySelector('.audit-diff-container');
     const resultsSummary = document.querySelector('.audit-results-summary');
+    const reportToolbar = document.querySelector('.audit-report-toolbar');
+
+    if (diffView) diffView.style.display = 'none';
+    if (resultsSummary) resultsSummary.style.display = 'none';
+    if (reportToolbar) reportToolbar.style.display = 'none';
 
     const updateProgress = (pct, stageText) => {
       if (progressContainer) progressContainer.style.display = 'block';
@@ -372,6 +377,28 @@ class ModalsManager {
 
       if (diffView) diffView.style.display = 'block';
       if (resultsSummary) resultsSummary.style.display = 'flex';
+
+      // Activate C-Level Executive Report Toolbar
+      if (reportToolbar) {
+        reportToolbar.style.display = 'flex';
+        const pdfBtn = reportToolbar.querySelector('.report-btn-pdf');
+        const mdBtn = reportToolbar.querySelector('.report-btn-md');
+
+        if (pdfBtn) {
+          pdfBtn.onclick = (e) => {
+            e.preventDefault();
+            this.openPrintableExecutiveReport(parsedData, analysisData, patchData?.patches || []);
+          };
+        }
+
+        if (mdBtn) {
+          mdBtn.onclick = (e) => {
+            e.preventDefault();
+            this.downloadMarkdownReport(parsedData, analysisData, patchData?.patches || []);
+          };
+        }
+      }
+
       if (submitBtn) {
         submitBtn.innerHTML = '<span class="audit-btn-icon">◆</span><span class="audit-btn-text">Approve & Apply Patches ◆</span>';
         submitBtn.disabled = false;
@@ -435,6 +462,71 @@ class ModalsManager {
       }
       if (window.daoismAudio) window.daoismAudio.playStartChime();
     }, 3400);
+  }
+
+  /**
+   * Downloads the C-Level Executive Audit Report as a structured Markdown (.md) document.
+   */
+  async downloadMarkdownReport(repoInfo = {}, analysis = {}, patches = []) {
+    try {
+      const resp = await fetch('/api/audit/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoInfo,
+          analysis,
+          patches,
+          format: 'markdown'
+        })
+      });
+
+      const json = await resp.json();
+      if (resp.ok && json.success && json.data?.markdown) {
+        const blob = new Blob([json.data.markdown], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = json.data.fileName || `${repoInfo.repo || 'repository'}-RankOps-Executive-Report.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        if (window.daoismAudio) window.daoismAudio.playHover();
+      }
+    } catch (err) {
+      console.error('[RankOps] Error exporting Markdown report:', err);
+    }
+  }
+
+  /**
+   * Opens the standalone, print-optimized HTML Executive Audit Report for printing or PDF export.
+   */
+  async openPrintableExecutiveReport(repoInfo = {}, analysis = {}, patches = []) {
+    try {
+      const resp = await fetch('/api/audit/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoInfo,
+          analysis,
+          patches,
+          format: 'html'
+        })
+      });
+
+      const html = await resp.text();
+      if (resp.ok && html) {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.open();
+          printWindow.document.write(html);
+          printWindow.document.close();
+        }
+        if (window.daoismAudio) window.daoismAudio.playHover();
+      }
+    } catch (err) {
+      console.error('[RankOps] Error opening printable report:', err);
+    }
   }
 
   bindHotspots() {

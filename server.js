@@ -9,6 +9,7 @@ const { GroqClient, GroqApiError } = require('./lib/groq-client');
 const { AISurgeon, AISurgeonError } = require('./lib/ai-surgeon');
 const { GitHubPRCreator, GitHubPRError } = require('./lib/github-pr-creator');
 const { statsAggregator } = require('./lib/stats-aggregator');
+const { ReportGenerator } = require('./lib/report-generator');
 
 // Load environment variables from .env if present
 try {
@@ -491,6 +492,68 @@ const server = http.createServer(async (req, res) => {
         title: 'Internal Server Error',
         status: 500,
         detail: 'An unexpected error occurred while creating the Pull Request.'
+      }));
+    }
+    return;
+  }
+
+  // API Route: POST /api/audit/report (Executive Compliance & ROI Brief Generator)
+  if (urlPath === '/api/audit/report') {
+    if (req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/method-not-allowed',
+        title: 'Method Not Allowed',
+        status: 405,
+        detail: `HTTP method ${req.method} is not supported. Use POST.`
+      }));
+      return;
+    }
+
+    try {
+      const parsedBody = await readJsonBody();
+      const { repoInfo, analysis, patches, format = 'markdown' } = parsedBody;
+
+      if (format === 'html' || format === 'pdf') {
+        const html = ReportGenerator.generateExecutiveHtmlReport(repoInfo || {}, analysis || {}, patches || []);
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(html);
+        return;
+      }
+
+      const markdown = ReportGenerator.generateExecutiveMarkdownReport(repoInfo || {}, analysis || {}, patches || []);
+      const pillars = ReportGenerator.calculateFourPillars(analysis || {}, patches || []);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        data: {
+          repoInfo: repoInfo || {},
+          format: 'markdown',
+          markdown,
+          pillars,
+          fileName: `${repoInfo?.repo || 'repository'}-RankOps-Executive-Report.md`
+        }
+      }));
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-json',
+          title: 'Bad Request',
+          status: 400,
+          detail: err.message
+        }));
+        return;
+      }
+
+      console.error('[Server Error - report]:', err);
+      res.writeHead(500, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/internal-server-error',
+        title: 'Internal Server Error',
+        status: 500,
+        detail: 'An unexpected error occurred during executive report generation.'
       }));
     }
     return;

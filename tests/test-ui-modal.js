@@ -73,6 +73,16 @@ function runUITests() {
     assert.ok(js.includes('diff-line-gutter'));
   });
 
+  it('contains accessible executive report toolbar and export methods', () => {
+    assert.ok(html.includes('class="audit-report-toolbar"'));
+    assert.ok(html.includes('class="report-btn report-btn-pdf"'));
+    assert.ok(html.includes('class="report-btn report-btn-md"'));
+    assert.ok(css.includes('.audit-report-toolbar'));
+    assert.ok(css.includes('.report-btn-pdf'));
+    assert.ok(js.includes('downloadMarkdownReport'));
+    assert.ok(js.includes('openPrintableExecutiveReport'));
+  });
+
   console.log(`\n===================================`);
   console.log(`Total Tests: ${passed + failed} | Passed: ${passed} | Failed: ${failed}`);
   console.log(`===================================\n`);

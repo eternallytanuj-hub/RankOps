@@ -1,9 +1,18 @@
 {
-  "totalAudits": 52,
-  "totalFilesScanned": 128604,
-  "avgScoreImprovement": 45,
-  "aiDirectivesDeployed": 448,
+  "totalAudits": 54,
+  "totalFilesScanned": 128612,
+  "avgScoreImprovement": 44,
+  "aiDirectivesDeployed": 466,
   "recentAudits": [
+    {
+      "repo": "react/react",
+      "defaultBranch": "main",
+      "filesScanned": 4,
+      "scoreBefore": 50,
+      "scoreAfter": 92,
+      "scoreDelta": "+42 pts",
+      "timestamp": "2026-08-21T10:41:53.819Z"
+    },
     {
       "repo": "eternallytanuj-hub/RankOps",
       "defaultBranch": "main",
@@ -11,7 +20,7 @@
       "scoreBefore": 50,
       "scoreAfter": 92,
       "scoreDelta": "+42 pts",
-      "timestamp": "2026-08-21T10:30:18.264Z"
+      "timestamp": "2026-08-21T10:31:36.629Z"
     },
     {
       "repo": "test-org/super-app",

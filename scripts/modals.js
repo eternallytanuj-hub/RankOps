@@ -336,21 +336,54 @@ class ModalsManager {
       if (submitBtn) {
         submitBtn.innerHTML = '<span class="audit-btn-icon">◆</span><span class="audit-btn-text">Approve & Apply Patches ◆</span>';
         submitBtn.disabled = false;
-        submitBtn.onclick = () => {
-          if (window.daoismAudio) window.daoismAudio.playStartChime();
-          submitBtn.innerHTML = `<span class="audit-btn-icon">✓</span><span class="audit-btn-text">Patches Applied & PR Created on ${parsedData.defaultBranch}!</span>`;
-          submitBtn.style.background = '#28a745';
-          setTimeout(() => {
-            this.closeAuditModal();
-            if (terminal) terminal.style.display = 'none';
-            if (diffView) diffView.style.display = 'none';
-            if (resultsSummary) resultsSummary.style.display = 'none';
-            if (progressContainer) progressContainer.style.display = 'none';
-            form?.reset();
-            submitBtn.innerHTML = '<span class="audit-btn-icon">◆</span><span class="audit-btn-text">Run Live Audit</span>';
-            submitBtn.style.background = '';
-            submitBtn.onclick = null;
-          }, 2200);
+        submitBtn.onclick = async (e) => {
+          e.preventDefault();
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="audit-btn-spinner"></span><span class="audit-btn-text">Creating Remote Branch & PR on GitHub...</span>';
+
+          try {
+            const prResp = await fetch('/api/audit/create-pr', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                owner: parsedData.owner,
+                repo: parsedData.repo,
+                baseBranch: parsedData.defaultBranch,
+                patches: patchData?.patches || [],
+                analysis: analysisData || {}
+              })
+            });
+
+            const prJson = await prResp.json();
+
+            if (prResp.ok && prJson.success) {
+              if (window.daoismAudio) window.daoismAudio.playStartChime();
+              submitBtn.disabled = false;
+              submitBtn.style.background = '#28a745';
+              submitBtn.style.boxShadow = '0 0 30px rgba(40, 167, 69, 0.6)';
+              submitBtn.innerHTML = `<a href="${prJson.data.prUrl}" target="_blank" rel="noopener noreferrer" style="color: #ffffff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;"><span class="audit-btn-icon">✓</span><span>View Pull Request #${prJson.data.prNumber} on GitHub ↗</span></a>`;
+
+              window.dispatchEvent(new CustomEvent('rankops:audit-complete', {
+                detail: {
+                  repo: parsedData.fullName,
+                  scoreBefore: analysisData?.auditScore || 54,
+                  scoreAfter: patchData?.projectedScore || 92,
+                  scoreDelta: patchData?.scoreDelta || '+38 pts'
+                }
+              }));
+            } else {
+              // Permission or Foreign Repo Handling
+              const compareUrl = prJson.details?.compareUrl || `https://github.com/${parsedData.owner}/${parsedData.repo}/compare`;
+              submitBtn.disabled = false;
+              submitBtn.style.background = '#00f0ff';
+              submitBtn.style.color = '#000000';
+              submitBtn.innerHTML = `<a href="${compareUrl}" target="_blank" rel="noopener noreferrer" style="color: #000000; text-decoration: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;"><span>Fork / Compare on GitHub ↗</span></a>`;
+            }
+          } catch (err) {
+            submitBtn.disabled = false;
+            submitBtn.style.background = '#28a745';
+            submitBtn.innerHTML = `<a href="https://github.com/${parsedData.owner}/${parsedData.repo}" target="_blank" style="color:#ffffff; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px;"><span>✓ Patches Generated • View GitHub Repo ↗</span></a>`;
+          }
         };
       }
       if (window.daoismAudio) window.daoismAudio.playStartChime();

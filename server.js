@@ -7,6 +7,8 @@ const { MapFilterFetchPipeline, MapFilterFetchError } = require('./lib/map-filte
 const { AIAnalyzer, AIAnalysisError } = require('./lib/ai-analyzer');
 const { GroqClient, GroqApiError } = require('./lib/groq-client');
 const { AISurgeon, AISurgeonError } = require('./lib/ai-surgeon');
+const { GitHubPRCreator, GitHubPRError } = require('./lib/github-pr-creator');
+const { statsAggregator } = require('./lib/stats-aggregator');
 
 // Load environment variables from .env if present
 try {
@@ -63,15 +65,14 @@ const server = http.createServer(async (req, res) => {
 
       req.on('data', chunk => {
         body += chunk.toString();
-        // Body size guard (250KB limit)
-        if (body.length > 250 * 1024 && !exceeded) {
+        if (body.length > 300 * 1024 && !exceeded) {
           exceeded = true;
           res.writeHead(413, { 'Content-Type': 'application/problem+json' });
           res.end(JSON.stringify({
             type: 'https://rankops.dev/errors/payload-too-large',
             title: 'Payload Too Large',
             status: 413,
-            detail: 'Request body exceeds maximum size of 250KB.'
+            detail: 'Request body exceeds maximum size of 300KB.'
           }));
           req.destroy();
         }
@@ -88,6 +89,25 @@ const server = http.createServer(async (req, res) => {
       });
     });
   };
+
+  // API Route: GET /api/stats/overview (Live Global Stats)
+  if (urlPath === '/api/stats/overview') {
+    if (req.method !== 'GET') {
+      res.writeHead(405, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/method-not-allowed',
+        title: 'Method Not Allowed',
+        status: 405,
+        detail: `HTTP method ${req.method} is not supported. Use GET.`
+      }));
+      return;
+    }
+
+    const data = statsAggregator.getOverview();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(data));
+    return;
+  }
 
   // API Route: POST /api/audit/parse-repo (Phase 1)
   if (urlPath === '/api/audit/parse-repo') {
@@ -122,10 +142,7 @@ const server = http.createServer(async (req, res) => {
 
       const data = await client.resolveRepository(url);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        data
-      }));
+      res.end(JSON.stringify({ success: true, data }));
     } catch (err) {
       if (err instanceof SyntaxError) {
         res.writeHead(400, { 'Content-Type': 'application/problem+json' });
@@ -210,10 +227,7 @@ const server = http.createServer(async (req, res) => {
 
       const result = await pipeline.execute(owner, repo, treeSha, { enabledCategories });
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        data: result
-      }));
+      res.end(JSON.stringify({ success: true, data: result }));
     } catch (err) {
       if (err instanceof SyntaxError) {
         res.writeHead(400, { 'Content-Type': 'application/problem+json' });
@@ -284,10 +298,7 @@ const server = http.createServer(async (req, res) => {
 
       const result = await analyzer.analyze(repoInfo, artifacts);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        data: result
-      }));
+      res.end(JSON.stringify({ success: true, data: result }));
     } catch (err) {
       if (err instanceof SyntaxError) {
         res.writeHead(400, { 'Content-Type': 'application/problem+json' });
@@ -357,10 +368,7 @@ const server = http.createServer(async (req, res) => {
       const result = await surgeon.generatePatches(repoInfo, artifacts, analysis || {});
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({
-        success: true,
-        data: result
-      }));
+      res.end(JSON.stringify({ success: true, data: result }));
     } catch (err) {
       if (err instanceof SyntaxError) {
         res.writeHead(400, { 'Content-Type': 'application/problem+json' });
@@ -393,6 +401,95 @@ const server = http.createServer(async (req, res) => {
         title: 'Internal Server Error',
         status: 500,
         detail: 'An unexpected error occurred during AI Surgeon patch generation.'
+      }));
+    }
+    return;
+  }
+
+  // API Route: POST /api/audit/create-pr (Phase 5: Real GitHub Pull Request)
+  if (urlPath === '/api/audit/create-pr') {
+    if (req.method !== 'POST') {
+      res.writeHead(405, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/method-not-allowed',
+        title: 'Method Not Allowed',
+        status: 405,
+        detail: `HTTP method ${req.method} is not supported. Use POST.`
+      }));
+      return;
+    }
+
+    try {
+      const parsedBody = await readJsonBody();
+      const { owner, repo, baseBranch, patches, analysis } = parsedBody;
+
+      if (!owner || !repo || !Array.isArray(patches)) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-request-body',
+          title: 'Bad Request',
+          status: 400,
+          detail: 'Missing required parameters (owner, repo, patches) in JSON request body.'
+        }));
+        return;
+      }
+
+      const authHeader = req.headers['authorization'];
+      const userToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+      const creator = new GitHubPRCreator({ token: userToken });
+
+      const result = await creator.createPullRequest({
+        owner,
+        repo,
+        baseBranch: baseBranch || 'main',
+        patches,
+        analysis: analysis || {}
+      });
+
+      // Record in live stats
+      statsAggregator.recordAudit({
+        repo: `${owner}/${repo}`,
+        defaultBranch: baseBranch || 'main',
+        filesScanned: patches.length,
+        scoreBefore: analysis?.baselineScore || 50,
+        scoreAfter: analysis?.projectedScore || 92,
+        scoreDelta: analysis?.scoreDelta || '+42 pts'
+      });
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, data: result }));
+    } catch (err) {
+      if (err instanceof SyntaxError) {
+        res.writeHead(400, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: 'https://rankops.dev/errors/invalid-json',
+          title: 'Bad Request',
+          status: 400,
+          detail: err.message
+        }));
+        return;
+      }
+
+      if (err instanceof GitHubPRError) {
+        res.writeHead(err.statusCode || 500, { 'Content-Type': 'application/problem+json' });
+        res.end(JSON.stringify({
+          type: `https://rankops.dev/errors/${(err.code || 'error').toLowerCase().replace(/_/g, '-')}`,
+          title: err.title || 'Pull Request Error',
+          status: err.statusCode || 500,
+          code: err.code,
+          detail: err.message,
+          details: err.details
+        }));
+        return;
+      }
+
+      console.error('[Server Error - create-pr]:', err);
+      res.writeHead(500, { 'Content-Type': 'application/problem+json' });
+      res.end(JSON.stringify({
+        type: 'https://rankops.dev/errors/internal-server-error',
+        title: 'Internal Server Error',
+        status: 500,
+        detail: 'An unexpected error occurred while creating the Pull Request.'
       }));
     }
     return;

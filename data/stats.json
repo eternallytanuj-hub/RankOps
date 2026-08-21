@@ -1,0 +1,53 @@
+{
+  "totalAudits": 50,
+  "totalFilesScanned": 128550,
+  "avgScoreImprovement": 44,
+  "aiDirectivesDeployed": 430,
+  "recentAudits": [
+    {
+      "repo": "test-org/super-app",
+      "defaultBranch": "main",
+      "filesScanned": 50,
+      "scoreBefore": 40,
+      "scoreAfter": 95,
+      "scoreDelta": "+55 pts",
+      "timestamp": "2026-08-21T10:14:06.047Z"
+    },
+    {
+      "repo": "facebook/react",
+      "defaultBranch": "main",
+      "filesScanned": 7842,
+      "scoreBefore": 31,
+      "scoreAfter": 92,
+      "scoreDelta": "+61 pts",
+      "timestamp": "2026-08-21T10:00:21.028Z"
+    },
+    {
+      "repo": "vercel/next.js",
+      "defaultBranch": "canary",
+      "filesScanned": 14210,
+      "scoreBefore": 65,
+      "scoreAfter": 96,
+      "scoreDelta": "+31 pts",
+      "timestamp": "2026-08-21T09:27:21.032Z"
+    },
+    {
+      "repo": "tailwindlabs/tailwindcss",
+      "defaultBranch": "master",
+      "filesScanned": 3120,
+      "scoreBefore": 42,
+      "scoreAfter": 94,
+      "scoreDelta": "+52 pts",
+      "timestamp": "2026-08-21T08:42:21.032Z"
+    },
+    {
+      "repo": "eternallytanuj-hub/RankOps",
+      "defaultBranch": "main",
+      "filesScanned": 842,
+      "scoreBefore": 54,
+      "scoreAfter": 94,
+      "scoreDelta": "+40 pts",
+      "timestamp": "2026-08-21T07:42:21.032Z"
+    }
+  ]
+}

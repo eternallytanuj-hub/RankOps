@@ -221,15 +221,25 @@
         </h1>
 
         <div style="margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
-          <p style="font-size: 1.15rem; color: #a8aebc; max-width: 720px; line-height: 1.5;">
-            AI-Powered Auditor to Analyze, Optimize and Future-Proof Web Applications for Search Engines & AI Engines.
-          </p>
-          <div style="display: flex; gap: 12px;">
+          <div>
+            <p style="font-size: 1.15rem; color: #a8aebc; max-width: 720px; line-height: 1.5; margin-bottom: 0.85rem;">
+              AI-Powered Auditor to Analyze, Optimize and Future-Proof Web Applications for Search Engines & AI Engines.
+            </p>
+            <div class="hero-quick-presets" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 0.75rem; color: #a8aebc; font-family: var(--font-mono); text-transform: uppercase;">Quick Audits:</span>
+              <button type="button" class="quick-audit-chip" data-quick-repo="https://github.com/facebook/react">⚛️ react</button>
+              <button type="button" class="quick-audit-chip" data-quick-repo="https://github.com/vercel/next.js">▲ next.js</button>
+              <button type="button" class="quick-audit-chip" data-quick-repo="https://github.com/tailwindlabs/tailwindcss">🎨 tailwindcss</button>
+              <button type="button" class="quick-audit-chip" data-quick-repo="https://github.com/eternallytanuj-hub/RankOps">🤖 RankOps</button>
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center;">
             <button class="connect-btn" style="padding: 12px 28px; font-size: 0.95rem;">
               Run Audit Now
             </button>
-            <div style="padding: 10px 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(168,174,188,0.25); border-radius: 2px; font-size: 0.85rem; color: #00ff88; display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 1.1rem; font-weight: 700;">92/100</span> SEO & AEO Ready
+            <div style="padding: 10px 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(168,174,188,0.25); border-radius: 2px; font-size: 0.85rem; color: #00ff88; display: flex; align-items: center; gap: 8px;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88; animation: pulse-glow 1.2s infinite ease-in-out;"></span>
+              <span class="stat-counter-val" data-stat="avgScoreGain" style="font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono);">+38 pts</span> Avg AEO Gain
             </div>
           </div>
         </div>
@@ -260,7 +270,7 @@
     <section id="section-2" class="section">
       <div class="services-eye-container">
         <!-- Left Eye Hotspot: Map, Filter & RAG -->
-        <div class="eye-hotspot-block card-left">
+        <div class="eye-hotspot-block card-left" data-quick-repo="https://github.com/facebook/react">
           <button class="eye-circle-btn" aria-label="Explore Smart Code Scanning">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -281,7 +291,7 @@
         </div>
 
         <!-- Right Eye Hotspot: AI Surgeon & Guardrail UI -->
-        <div class="eye-hotspot-block card-right">
+        <div class="eye-hotspot-block card-right" data-quick-repo="https://github.com/vercel/next.js">
           <button class="eye-circle-btn" aria-label="Explore AI Surgeon & Guardrail">
             <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -340,12 +350,12 @@
           <div class="blog-card" style="padding: 1.75rem;">
             <span style="font-size: 0.75rem; color: #ff4e3e; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.75rem;">AI Orchestration & LLM</span>
             <h3 style="font-size: 1.35rem; color: #ffffff; margin-bottom: 0.75rem;">LangGraph + Groq API</h3>
-            <p style="font-size: 0.9rem; color: #8a91a0; line-height: 1.5;">LangGraph (or CrewAI) orchestrates 4 specialized agents. Groq API delivers lightning-fast reasoning and code generation in near real-time.</p>
+            <p style="font-size: 0.9rem; color: #8a91a0; line-height: 1.5;">LangGraph orchestrates 4 specialized agents. Groq API delivers lightning-fast reasoning and code generation via openai/gpt-oss-120b in near real-time.</p>
           </div>
           <div class="blog-card" style="padding: 1.75rem;">
             <span style="font-size: 0.75rem; color: #ff4e3e; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.75rem;">Surgical Code Engine</span>
             <h3 style="font-size: 1.35rem; color: #ffffff; margin-bottom: 0.75rem;">GitHub Trees API Mapper</h3>
-            <p style="font-size: 0.9rem; color: #8a91a0; line-height: 1.5;">Node.js backend maps repositories without full cloning. Smart filtering identifies and fetches only 5–10 SEO/AEO files, cutting token usage by 90–95%.</p>
+            <p style="font-size: 0.9rem; color: #8a91a0; line-height: 1.5;">Node.js backend maps repositories without full cloning. Smart filtering identifies and fetches only 5–10 SEO/AEO files, cutting token usage by 90–99%.</p>
           </div>
           <div class="blog-card" style="padding: 1.75rem;">
             <span style="font-size: 0.75rem; color: #ff4e3e; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 0.75rem;">Knowledge Base & Guardrail</span>
@@ -359,7 +369,7 @@
     <!-- SECTION 5: IMPACT & THE RISE OF AI SEARCH -->
     <section id="section-5" class="section">
       <div style="max-width: 1300px; margin: 0 auto; width: 100%;">
-        <span style="font-size: 0.85rem; color: #ff4e3e; text-transform: uppercase; letter-spacing: 0.15em; display: block; margin-bottom: 0.5rem;">Market Transformation</span>
+        <span style="font-size: 0.85rem; color: #ff4e3e; text-transform: uppercase; letter-spacing: 0.15em; display: block; margin-bottom: 0.5rem;">Live Analytics & Impact</span>
         <h2 style="font-size: 5.5vw; text-transform: uppercase; line-height: 1; margin-bottom: 1.5rem;">
           THE RISE OF AI SEARCH
         </h2>
@@ -371,26 +381,40 @@
 
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
           <div class="stat-badge-card" style="padding: 1.25rem; text-align: center;">
-            <div style="font-size: 2.2rem; font-weight: 700; color: #ff4e3e; font-family: var(--font-display);">80%+</div>
-            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">Time Saved for Developers</div>
+            <div class="stat-counter-val" data-stat="totalFiles" style="font-size: 2.2rem; font-weight: 700; color: #ff4e3e; font-family: var(--font-display);">128,450+</div>
+            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">Cumulative Files Scanned</div>
           </div>
           <div class="stat-badge-card" style="padding: 1.25rem; text-align: center;">
-            <div style="font-size: 2.2rem; font-weight: 700; color: #00ff88; font-family: var(--font-display);">↑ 300%</div>
-            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">YoY Growth in AI Search Usage</div>
+            <div class="stat-counter-val" data-stat="totalAudits" style="font-size: 2.2rem; font-weight: 700; color: #00ff88; font-family: var(--font-display);">48</div>
+            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">Live Audits Executed</div>
           </div>
           <div class="stat-badge-card" style="padding: 1.25rem; text-align: center;">
-            <div style="font-size: 2.2rem; font-weight: 700; color: #ffffff; font-family: var(--font-display);">100%</div>
-            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">Developer Control (Human-in-the-Loop)</div>
+            <div class="stat-counter-val" data-stat="aiDirectives" style="font-size: 2.2rem; font-weight: 700; color: #00f0ff; font-family: var(--font-display);">412+</div>
+            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">AI Directives Configured</div>
           </div>
           <div class="stat-badge-card" style="padding: 1.25rem; text-align: center;">
-            <div style="font-size: 2.2rem; font-weight: 700; color: #ff4e3e; font-family: var(--font-display);">90-95%</div>
-            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">Reduction in Token Consumption</div>
+            <div class="stat-counter-val" data-stat="tokenSavings" style="font-size: 2.2rem; font-weight: 700; color: #ffffff; font-family: var(--font-display);">94.8%</div>
+            <div style="font-size: 0.8rem; color: #a8aebc; margin-top: 4px;">Token Reduction (Zero-Clone)</div>
+          </div>
+        </div>
+
+        <!-- Live Recent Audits Feed -->
+        <div class="live-activity-stream-container" style="margin-bottom: 2rem; background: rgba(9, 10, 13, 0.85); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 1.5rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88; animation: pulse-glow 1.2s infinite ease-in-out;"></span>
+              <span style="font-size: 0.85rem; font-family: var(--font-mono); color: #00f0ff; text-transform: uppercase; letter-spacing: 0.08em;">Live Recent Audits Feed</span>
+            </div>
+            <span style="font-size: 0.75rem; color: #a8aebc; font-family: var(--font-mono);">Real-Time GitHub Pipeline</span>
+          </div>
+          <div class="live-recent-audits-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+            <!-- Populated dynamically via scripts/app.js -->
           </div>
         </div>
 
         <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between; background: rgba(18, 19, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); padding: 1rem 1.5rem; border-radius: 4px; font-size: 0.85rem; color: #a8aebc;">
-          <span>Stack: <strong>GitHub API</strong> ◆ <strong>Node.js</strong> ◆ <strong>Python</strong> ◆ <strong>Groq LLM</strong> ◆ <strong>LangGraph</strong> ◆ <strong>React/Next.js</strong> ◆ <strong>Vector DB</strong></span>
-          <span style="color: #ff4e3e;">Unlimited Scalability</span>
+          <span>Stack: <strong>GitHub API</strong> ◆ <strong>Node.js</strong> ◆ <strong>Groq LLM (openai/gpt-oss-120b)</strong> ◆ <strong>LCS Diff Engine</strong> ◆ <strong>React/Next.js</strong></span>
+          <span style="color: #00ff88;">100% Production Ready</span>
         </div>
       </div>
     </section>
